@@ -81,6 +81,39 @@ textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:1
   <div class="progressbar" style="margin-top:10px"><span id="goalBar"></span></div>
  </section>
  <section class="panel">
+  <h2>📚 Study Timetable</h2>
+  <form id="studyForm" class="formgrid">
+    <div>
+      <label>Subject</label>
+      <input id="studySubject" placeholder="Mathematics" required>
+    </div>
+    <div>
+      <label>Day</label>
+      <select id="studyDay">
+        <option>Monday</option>
+        <option>Tuesday</option>
+        <option>Wednesday</option>
+        <option>Thursday</option>
+        <option>Friday</option>
+        <option>Saturday</option>
+        <option>Sunday</option>
+      </select>
+    </div>
+    <div>
+      <label>Start time</label>
+      <input id="studyTime" type="time" required>
+    </div>
+    <div>
+      <label>Duration (minutes)</label>
+      <input id="studyDuration" type="number" min="5" max="300" value="45" required>
+    </div>
+    <div class="wide">
+      <button class="primary" type="submit">＋ Add to timetable</button>
+    </div>
+  </form>
+  <div id="studyList" class="tasklist" style="margin-top:14px"></div>
+ </section>
+ <section class="panel">
   <h2>📝 Quick notes</h2><label for="quickNotes">Ideas, reminders, or class notes</label><textarea id="quickNotes" placeholder="Write a quick note..."></textarea><p class="muted">Notes save automatically on this device.</p>
  </section>
  <section class="panel">
@@ -134,9 +167,78 @@ document.getElementById('themeToggle').addEventListener('click',()=>{document.bo
 document.getElementById('notifyBtn').addEventListener('click',async()=>{if(!('Notification'in window)){alert('Notifications are not supported in this browser.');return}const result=await Notification.requestPermission();alert(result==='granted'?'Notifications enabled.':'Notification permission was not granted.')});
 document.getElementById('exportBtn').addEventListener('click',()=>{const data={tasks,notes:notes.value,exam:localStorage.getItem('tw-exam'),goal:goalInput.value,focusMinutes};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='timewise-backup.json';a.click();URL.revokeObjectURL(a.href)});
 document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());document.getElementById('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.tasks))throw new Error('Invalid backup');tasks=d.tasks;save();if(typeof d.notes==='string'){notes.value=d.notes;localStorage.setItem('tw-notes',d.notes)}if(d.exam)localStorage.setItem('tw-exam',d.exam);if(d.goal)goalInput.value=d.goal;if(Number.isFinite(d.focusMinutes))focusMinutes=d.focusMinutes;localStorage.setItem('tw-focus-minutes',focusMinutes);showExam();updateGoal();render();alert('Backup restored!')}catch(err){alert('Could not read this backup file.')}e.target.value=''});
-
 </script>
 <script>
+ let studyPlans = [];
+try {
+  studyPlans = JSON.parse(localStorage.getItem('tw-study-plans') || '[]');
+} catch(e) {}
+
+function saveStudyPlans() {
+  localStorage.setItem('tw-study-plans', JSON.stringify(studyPlans));
+}
+
+function renderStudyPlans() {
+  const list = document.getElementById('studyList');
+  list.innerHTML = '';
+
+  if (!studyPlans.length) {
+    list.innerHTML = '<div class="empty">No study sessions yet.</div>';
+    return;
+  }
+
+  studyPlans.sort((a,b) =>
+    a.day.localeCompare(b.day) || a.time.localeCompare(b.time)
+  );
+
+  studyPlans.forEach(plan => {
+    const item = document.createElement('div');
+    item.className = 'task';
+
+    const info = document.createElement('div');
+    info.className = 'taskbody';
+
+    const name = document.createElement('div');
+    name.className = 'taskname';
+    name.textContent = plan.subject;
+
+    const meta = document.createElement('div');
+    meta.className = 'taskmeta';
+    meta.textContent = `${plan.day} · ${plan.time} · ${plan.duration} minutes`;
+
+    const remove = document.createElement('button');
+    remove.className = 'danger';
+    remove.textContent = 'Delete';
+    remove.onclick = () => {
+      studyPlans = studyPlans.filter(p => p.id !== plan.id);
+      saveStudyPlans();
+      renderStudyPlans();
+    };
+
+    info.append(name, meta);
+    item.append(info, remove);
+    list.appendChild(item);
+  });
+}
+
+document.getElementById('studyForm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  studyPlans.push({
+    id: Date.now(),
+    subject: document.getElementById('studySubject').value.trim(),
+    day: document.getElementById('studyDay').value,
+    time: document.getElementById('studyTime').value,
+    duration: Number(document.getElementById('studyDuration').value)
+  });
+
+  saveStudyPlans();
+  e.target.reset();
+  document.getElementById('studyDuration').value = 45;
+  renderStudyPlans();
+});
+
+renderStudyPlans();
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(err => console.log("Service worker registration failed", err))); }
 </script>
 </body>
