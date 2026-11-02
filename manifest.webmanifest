@@ -1,0 +1,18 @@
+{
+  "name": "TimeWise Student Planner",
+  "short_name": "TimeWise",
+  "start_url": "./timewise_student_planner.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f4fb",
+  "theme_color": "#4b2bb4",
+  "description": "Plan study tasks, focus sessions and track progress.",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
