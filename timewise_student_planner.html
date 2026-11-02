@@ -25,6 +25,103 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:0 18px 25px}
 body.dark{--ink:#f3efff;--muted:#b9b1d0;--bg:#171326;--card:#241d38;--line:#3b3153}body.dark input,body.dark select,body.dark textarea{background:#302744;color:var(--ink);border-color:#514568}body.dark .day{background:#302744}body.dark .secondary{background:#3b3153;color:#eee}
 textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;background:#fff;color:var(--ink)}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini-stat{background:#f7f5fc;padding:12px;border-radius:12px}.dark .mini-stat{background:#302744}
+/* TIMEWISE MODERN PURPLE THEME */
+
+:root {
+  --primary: #6c4bd8;
+  --primary-dark: #5032b5;
+  --bg: #f6f3ff;
+  --card: #ffffff;
+  --text: #292344;
+  --muted: #817b98;
+  --border: #e9e2fa;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 5px 20px rgba(85, 58, 160, 0.07);
+}
+
+h1, h2, h3 {
+  color: var(--text);
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+button {
+  border-radius: 12px;
+  padding: 11px 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button.primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+button.primary:hover {
+  background: var(--primary-dark);
+}
+
+input, select, textarea {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px;
+  background: #fcfaff;
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid #c7b5ff;
+  border-color: var(--primary);
+}
+
+.task {
+  background: #faf8ff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 13px;
+  margin-bottom: 10px;
+}
+
+.taskmeta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.taskname {
+  font-weight: 650;
+  color: var(--text);
+}
+
+label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 15px;
+  text-align: center;
+}
 </style>
 </head>
 <body>
