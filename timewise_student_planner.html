@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4b2bb4">
+<title>TimeWise — Student Planner</title>
+<style>
+:root{--purple:#4b2bb4;--purple2:#6a4bd6;--ink:#211b35;--muted:#77738a;--bg:#f6f4fb;--card:#fff;--line:#ece8f5;--yellow:#ffe66d;--green:#18865c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(120deg,#39208f,#6746d2);color:white;padding:22px max(18px,calc((100% - 1120px)/2)) 26px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-size:22px;font-weight:850;letter-spacing:-.6px}.brand span{color:var(--yellow)}.pill{font-size:12px;background:#ffffff22;border:1px solid #ffffff44;border-radius:30px;padding:7px 11px}
+.hero{margin-top:25px;display:flex;justify-content:space-between;align-items:end;gap:20px}.hero h1{font-size:clamp(25px,4vw,38px);line-height:1.1;margin:0 0 8px}.hero p{margin:0;color:#e5ddff}.date{font-size:13px;color:#eee6ff;text-align:right}
+main{max-width:1120px;margin:22px auto;padding:0 18px 40px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;box-shadow:0 5px 18px #30205d08}.stat{padding:16px}.stat small{color:var(--muted);display:block}.stat strong{font-size:26px;display:block;margin-top:5px}.stat .emoji{float:right;font-size:20px}
+.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.panel{padding:19px;margin-bottom:16px}.panel h2{font-size:17px;margin:0 0 14px}.muted{color:var(--muted);font-size:13px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}input,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;color:var(--ink);font:inherit;min-width:0}input:focus,select:focus{outline:2px solid #c9baff;border-color:var(--purple2)}.wide{grid-column:1/-1}
+button{border:0;border-radius:11px;padding:11px 15px;font:700 14px inherit;cursor:pointer}.primary{background:var(--purple);color:white}.primary:hover{background:#39208f}.secondary{background:#f0ecfb;color:var(--purple)}.danger{background:#fff0f0;color:#b52d3a}.tasklist{display:grid;gap:9px}.task{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px}.task.done{opacity:.62}.task.done .taskname{text-decoration:line-through}.task input[type=checkbox]{width:18px;height:18px;accent-color:var(--purple)}.taskbody{flex:1;min-width:0}.taskname{font-weight:700;overflow-wrap:anywhere}.taskmeta{font-size:12px;color:var(--muted);margin-top:3px}.tag{font-size:11px;padding:4px 8px;border-radius:20px;background:#f0ecfb;color:var(--purple);white-space:nowrap}.tag.high{background:#fff0e9;color:#bd5b24}.tag.medium{background:#fff8d9;color:#866800}.task-actions{display:flex;gap:5px}.task-actions button{padding:7px 9px}.empty{text-align:center;padding:24px;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.timer{text-align:center;padding:10px 0}.clock{font-size:52px;font-weight:800;letter-spacing:1px;color:var(--purple);font-variant-numeric:tabular-nums}.timer-controls{display:flex;justify-content:center;gap:8px;margin-top:10px}.progressbar{height:10px;border-radius:20px;background:#eeeaf7;overflow:hidden}.progressbar span{display:block;height:100%;background:linear-gradient(90deg,#4b2bb4,#9b7cff);width:0;transition:width .3s}.days{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:13px}.day{text-align:center;background:#f7f5fc;border-radius:10px;padding:9px 3px}.day b{display:block;font-size:12px}.day span{font-size:11px;color:var(--muted)}.note{background:#fff9db;border:1px solid #f5e8a8;padding:12px;border-radius:12px;font-size:12px;color:#65551c;margin-top:14px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:0 18px 25px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.date{text-align:left}.panel{padding:15px}}
+@media(max-width:390px){.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.task{align-items:flex-start}.tag{display:none}}
+</style>
+</head>
+<body>
+<header>
+ <div class="top"><div class="brand">Time<span>Wise</span> ✦</div><div class="pill">STUDENT PRODUCTIVITY</div></div>
+ <div class="hero"><div><h1>Make time for what matters.</h1><p>Plan your day, focus on learning, and celebrate progress.</p></div><div class="date" id="todayDate"></div></div>
+</header>
+<main>
+ <section class="stats">
+  <div class="stat"><span class="emoji">📋</span><small>Today's tasks</small><strong id="totalCount">0</strong></div>
+  <div class="stat"><span class="emoji">✅</span><small>Completed</small><strong id="doneCount">0</strong></div>
+  <div class="stat"><span class="emoji">⏳</span><small>Remaining</small><strong id="remainingCount">0</strong></div>
+  <div class="stat"><span class="emoji">🎯</span><small>Completion</small><strong id="percentCount">0%</strong></div>
+ </section>
+ <div class="layout">
+  <div>
+   <section class="panel">
+    <h2>＋ Add a task</h2>
+    <form id="taskForm" class="formgrid">
+     <div class="wide"><label for="taskTitle">Task name</label><input id="taskTitle" maxlength="90" placeholder="e.g. Revise mathematics chapter 2" required></div>
+     <div><label for="subject">Subject / category</label><input id="subject" maxlength="35" placeholder="e.g. Mathematics"></div>
+     <div><label for="dueDate">Due date</label><input id="dueDate" type="date" required></div>
+     <div><label for="dueTime">Time (optional)</label><input id="dueTime" type="time"></div>
+     <div><label for="priority">Priority</label><select id="priority"><option>Medium</option><option>High</option><option>Low</option></select></div>
+     <div class="wide"><button class="primary" type="submit">Add to my planner</button></div>
+    </form>
+   </section>
+   <section class="panel">
+    <h2>Today's planner <span class="muted" id="taskSubtitle"></span></h2>
+    <div id="taskList" class="tasklist"><div class="empty">No tasks yet. Add your first task above.</div></div>
+   </section>
+  </div>
+  <div>
+   <section class="panel">
+    <h2>⏱ Focus timer</h2>
+    <p class="muted">Try a 25-minute focus session, then take a short break.</p>
+    <div class="timer"><div class="clock" id="clock">25:00</div><div class="muted" id="timerStatus">Ready to focus</div>
+     <div class="timer-controls"><button class="primary" id="startTimer">Start</button><button class="secondary" id="resetTimer">Reset</button></div>
+    </div>
+   </section>
+   <section class="panel">
+    <h2>📈 Your weekly progress</h2>
+    <div class="progressbar"><span id="weekBar"></span></div>
+    <p class="muted" id="weekSummary">Complete tasks to build your progress.</p>
+    <div class="days" id="days"></div>
+   </section>
+   <div class="note"><b>Small tip:</b> Choose your three most important tasks first. Keep breaks in your schedule too.</div>
+  </div>
+ </div>
+</main>
+<footer>TimeWise MVP · Your tasks are saved only in this browser on this device.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const today=new Date(); const localDate=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+$('todayDate').textContent=today.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+$('dueDate').value=localDate(today);
+let tasks=[]; try{tasks=JSON.parse(localStorage.getItem('timewise-tasks-v1')||'[]')}catch(e){tasks=[]}
+const save=()=>{try{localStorage.setItem('timewise-tasks-v1',JSON.stringify(tasks))}catch(e){alert('Could not save on this browser. You can still use the planner during this session.')}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function render(){
+ const date=localDate(today), todays=tasks.filter(t=>t.date===date),done=todays.filter(t=>t.done).length,remaining=todays.length-done,pct=todays.length?Math.round(done/todays.length*100):0;
+ $('totalCount').textContent=todays.length;$('doneCount').textContent=done;$('remainingCount').textContent=remaining;$('percentCount').textContent=pct+'%';$('taskSubtitle').textContent=`(${todays.length})`;
+ const list=$('taskList'); list.innerHTML='';
+ const sorted=[...todays].sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+ if(!sorted.length)list.innerHTML='<div class="empty">No tasks for today. Add your first task above.</div>';
+ sorted.forEach(t=>{const el=document.createElement('div');el.className='task'+(t.done?' done':'');el.innerHTML=`<input type="checkbox" aria-label="Mark complete" ${t.done?'checked':''}><div class="taskbody"><div class="taskname">${esc(t.title)}</div><div class="taskmeta">${esc(t.subject||'General')} · ${t.time?esc(t.time):'No time set'}</div></div><span class="tag ${t.priority.toLowerCase()}">${esc(t.priority)}</span><div class="task-actions"><button class="danger" aria-label="Delete task">×</button></div>`;el.querySelector('input').addEventListener('change',()=>{t.done=!t.done;save();render()});el.querySelector('button').addEventListener('click',()=>{tasks=tasks.filter(x=>x.id!==t.id);save();render()});list.appendChild(el)});
+ const start=new Date(today);start.setDate(today.getDate()-((today.getDay()+6)%7));let weekTasks=0,weekDone=0;$('days').innerHTML='';
+ for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);const key=localDate(d),arr=tasks.filter(t=>t.date===key),n=arr.filter(t=>t.done).length;weekTasks+=arr.length;weekDone+=n;const div=document.createElement('div');div.className='day';div.innerHTML=`<b>${d.toLocaleDateString(undefined,{weekday:'short'})}</b><span>${n}/${arr.length}</span>`;$('days').appendChild(div)}
+ const wp=weekTasks?Math.round(weekDone/weekTasks*100):0;$('weekBar').style.width=wp+'%';$('weekSummary').textContent=`${weekDone} of ${weekTasks} tasks completed this week (${wp}%).`;
+}
+$('taskForm').addEventListener('submit',e=>{e.preventDefault();const title=$('taskTitle').value.trim(),date=$('dueDate').value;if(!title||!date)return;tasks.push({id:Date.now()+Math.random(),title,subject:$('subject').value.trim(),date,time:$('dueTime').value,priority:$('priority').value,done:false});save();$('taskTitle').value='';$('subject').value='';$('dueTime').value='';render()});
+let seconds=1500,interval=null;function showClock(){$('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
+$('startTimer').addEventListener('click',()=>{if(interval){clearInterval(interval);interval=null;$('startTimer').textContent='Resume';$('timerStatus').textContent='Paused';return} $('startTimer').textContent='Pause';$('timerStatus').textContent='Focus time';interval=setInterval(()=>{seconds--;showClock();if(seconds<=0){clearInterval(interval);interval=null;$('startTimer').textContent='Start again';$('timerStatus').textContent='Session complete — take a short break!';if('Notification'in window&&Notification.permission==='granted')new Notification('TimeWise',{body:'Focus session complete. Take a short break.'});}},1000)});
+$('resetTimer').addEventListener('click',()=>{clearInterval(interval);interval=null;seconds=1500;showClock();$('startTimer').textContent='Start';$('timerStatus').textContent='Ready to focus'});
+render();
+</script>
+</body>
+</html>
