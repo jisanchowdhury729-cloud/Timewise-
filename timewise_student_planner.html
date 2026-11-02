@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4b2bb4">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <title>TimeWise — Student Planner</title>
 <style>
 :root{--purple:#4b2bb4;--purple2:#6a4bd6;--ink:#211b35;--muted:#77738a;--bg:#f6f4fb;--card:#fff;--line:#ece8f5;--yellow:#ffe66d;--green:#18865c}
@@ -19,6 +21,10 @@ button{border:0;border-radius:11px;padding:11px 15px;font:700 14px inherit;curso
 footer{text-align:center;color:var(--muted);font-size:12px;padding:0 18px 25px}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.date{text-align:left}.panel{padding:15px}}
 @media(max-width:390px){.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.task{align-items:flex-start}.tag{display:none}}
+
+body.dark{--ink:#f3efff;--muted:#b9b1d0;--bg:#171326;--card:#241d38;--line:#3b3153}body.dark input,body.dark select,body.dark textarea{background:#302744;color:var(--ink);border-color:#514568}body.dark .day{background:#302744}body.dark .secondary{background:#3b3153;color:#eee}
+textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;background:#fff;color:var(--ink)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini-stat{background:#f7f5fc;padding:12px;border-radius:12px}.dark .mini-stat{background:#302744}
 </style>
 </head>
 <body>
@@ -68,6 +74,26 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:0 18px 25px}
    <div class="note"><b>Small tip:</b> Choose your three most important tasks first. Keep breaks in your schedule too.</div>
   </div>
  </div>
+
+ <section class="panel">
+  <h2>🎯 Daily study goal</h2>
+  <div class="formgrid"><div><label for="goalInput">Target focus minutes</label><input id="goalInput" type="number" min="15" max="720" value="120"></div><div><label>Goal progress</label><div class="mini-stat"><b id="goalProgress">0 / 120 min</b></div></div></div>
+  <div class="progressbar" style="margin-top:10px"><span id="goalBar"></span></div>
+ </section>
+ <section class="panel">
+  <h2>📝 Quick notes</h2><label for="quickNotes">Ideas, reminders, or class notes</label><textarea id="quickNotes" placeholder="Write a quick note..."></textarea><p class="muted">Notes save automatically on this device.</p>
+ </section>
+ <section class="panel">
+  <h2>🎓 Exam countdown</h2>
+  <div class="formgrid"><div><label for="examName">Exam name</label><input id="examName" placeholder="e.g. Science exam"></div><div><label for="examDate">Exam date</label><input id="examDate" type="date"></div><div class="wide"><button class="primary" id="saveExam" type="button">Save exam</button> <span id="examResult" class="muted">No exam saved yet.</span></div></div>
+ </section>
+ <section class="panel">
+  <h2>⚙️ Settings & backup</h2>
+  <div class="settings-grid"><button class="secondary" id="themeToggle" type="button">🌙 Toggle dark mode</button><button class="secondary" id="notifyBtn" type="button">🔔 Enable notifications</button><button class="secondary" id="exportBtn" type="button">⬇️ Backup tasks</button><button class="secondary" id="importBtn" type="button">⬆️ Restore backup</button></div>
+  <input id="importFile" type="file" accept="application/json" hidden>
+  <p class="muted">Your information is stored in this browser on this device. Export a backup before changing phones.</p>
+ </section>
+
 </main>
 <footer>TimeWise MVP · Your tasks are saved only in this browser on this device.</footer>
 <script>
@@ -91,12 +117,27 @@ function render(){
 }
 $('taskForm').addEventListener('submit',e=>{e.preventDefault();const title=$('taskTitle').value.trim(),date=$('dueDate').value;if(!title||!date)return;tasks.push({id:Date.now()+Math.random(),title,subject:$('subject').value.trim(),date,time:$('dueTime').value,priority:$('priority').value,done:false});save();$('taskTitle').value='';$('subject').value='';$('dueTime').value='';render()});
 let seconds=1500,interval=null;function showClock(){$('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
-$('startTimer').addEventListener('click',()=>{if(interval){clearInterval(interval);interval=null;$('startTimer').textContent='Resume';$('timerStatus').textContent='Paused';return} $('startTimer').textContent='Pause';$('timerStatus').textContent='Focus time';interval=setInterval(()=>{seconds--;showClock();if(seconds<=0){clearInterval(interval);interval=null;$('startTimer').textContent='Start again';$('timerStatus').textContent='Session complete — take a short break!';if('Notification'in window&&Notification.permission==='granted')new Notification('TimeWise',{body:'Focus session complete. Take a short break.'});}},1000)});
+$('startTimer').addEventListener('click',()=>{if(interval){clearInterval(interval);interval=null;$('startTimer').textContent='Resume';$('timerStatus').textContent='Paused';return} $('startTimer').textContent='Pause';$('timerStatus').textContent='Focus time';interval=setInterval(()=>{seconds--;showClock();if(seconds<=0){focusMinutes+=25;localStorage.setItem('tw-focus-minutes',focusMinutes);if(typeof updateGoal==='function')updateGoal();clearInterval(interval);interval=null;$('startTimer').textContent='Start again';$('timerStatus').textContent='Session complete — take a short break!';if('Notification'in window&&Notification.permission==='granted')new Notification('TimeWise',{body:'Focus session complete. Take a short break.'});}},1000)});
 $('resetTimer').addEventListener('click',()=>{clearInterval(interval);interval=null;seconds=1500;showClock();$('startTimer').textContent='Start';$('timerStatus').textContent='Ready to focus'});
 render();
+
+// Extra TimeWise tools
+let focusMinutes=Number(localStorage.getItem('tw-focus-minutes')||0);
+const goalInput=document.getElementById('goalInput');
+goalInput.value=localStorage.getItem('tw-goal')||120;
+function updateGoal(){const goal=Math.max(1,Number(goalInput.value)||120);document.getElementById('goalProgress').textContent=`${focusMinutes} / ${goal} min`;document.getElementById('goalBar').style.width=Math.min(100,focusMinutes/goal*100)+'%';localStorage.setItem('tw-goal',goal)}
+goalInput.addEventListener('change',updateGoal);updateGoal();
+const notes=document.getElementById('quickNotes');notes.value=localStorage.getItem('tw-notes')||'';notes.addEventListener('input',()=>localStorage.setItem('tw-notes',notes.value));
+function showExam(){let ex={};try{ex=JSON.parse(localStorage.getItem('tw-exam')||'{}')}catch(e){};if(ex.date){const days=Math.ceil((new Date(ex.date+'T00:00:00')-new Date(new Date().toDateString()))/86400000);document.getElementById('examResult').textContent=days>0?`${ex.name}: ${days} days left`:days===0?`${ex.name}: Today!`:`${ex.name}: Date passed`;document.getElementById('examName').value=ex.name||'';document.getElementById('examDate').value=ex.date}else{document.getElementById('examResult').textContent='No exam saved yet.'}}
+document.getElementById('saveExam').addEventListener('click',()=>{const name=document.getElementById('examName').value.trim(),date=document.getElementById('examDate').value;if(!name||!date){alert('Enter exam name and date first.');return}localStorage.setItem('tw-exam',JSON.stringify({name,date}));showExam()});showExam();
+document.getElementById('themeToggle').addEventListener('click',()=>{document.body.classList.toggle('dark');localStorage.setItem('tw-dark',document.body.classList.contains('dark')?'1':'0')});if(localStorage.getItem('tw-dark')==='1')document.body.classList.add('dark');
+document.getElementById('notifyBtn').addEventListener('click',async()=>{if(!('Notification'in window)){alert('Notifications are not supported in this browser.');return}const result=await Notification.requestPermission();alert(result==='granted'?'Notifications enabled.':'Notification permission was not granted.')});
+document.getElementById('exportBtn').addEventListener('click',()=>{const data={tasks,notes:notes.value,exam:localStorage.getItem('tw-exam'),goal:goalInput.value,focusMinutes};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='timewise-backup.json';a.click();URL.revokeObjectURL(a.href)});
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());document.getElementById('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.tasks))throw new Error('Invalid backup');tasks=d.tasks;save();if(typeof d.notes==='string'){notes.value=d.notes;localStorage.setItem('tw-notes',d.notes)}if(d.exam)localStorage.setItem('tw-exam',d.exam);if(d.goal)goalInput.value=d.goal;if(Number.isFinite(d.focusMinutes))focusMinutes=d.focusMinutes;localStorage.setItem('tw-focus-minutes',focusMinutes);showExam();updateGoal();render();alert('Backup restored!')}catch(err){alert('Could not read this backup file.')}e.target.value=''});
+
 </script>
- <p style="text-align:center; padding:20px;">
-  Created by Jisan Chowdhury
- </p>
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(err => console.log("Service worker registration failed", err))); }
+</script>
 </body>
- </html>
+</html>
